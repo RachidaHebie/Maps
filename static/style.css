@@ -1,0 +1,212 @@
+/* Configuration Générale */
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    overflow: hidden;
+}
+
+#map-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* 1. Barre de Recherche Flottante */
+.search-container {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 1000;
+    width: 392px;
+}
+
+.search-bar {
+    background: white;
+    height: 48px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    transition: border-radius 0.2s;
+}
+
+.search-bar input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 16px;
+    color: #202124;
+}
+
+.vertical-divider {
+    width: 1px;
+    height: 28px;
+    background-color: #e8eaed;
+    margin: 0 10px;
+}
+
+.menu-icon, .search-icon { color: #5f6368; cursor: pointer; }
+.directions-icon { color: #1a73e8; cursor: pointer; }
+
+/* 2. Panneau Déroulant */
+#dropdown-panel {
+    display: none;
+    background: white;
+    border-top: 1px solid #f1f3f4;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.transport-modes {
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.mode-item {
+    color: #5f6368;
+    cursor: pointer;
+    padding: 4px 12px;
+    position: relative;
+}
+
+.mode-item.active { color: #1a73e8; }
+.mode-item.active::after {
+    content: "";
+    position: absolute;
+    bottom: -12px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #1a73e8;
+}
+
+.result-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+}
+
+.result-item:hover { background: #f8f9fa; }
+.result-item .material-icons { margin-right: 24px; color: #70757a; }
+
+.text-content .title { display: block; font-size: 14px; color: #3c4043; }
+.text-content .subtitle { font-size: 12px; color: #70757a; }
+
+/* 3. Carrousel de Filtres */
+.filter-carousel {
+    position: absolute;
+    top: 8px;
+    left: 410px;
+    z-index: 1000;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.filter-item {
+    background: white;
+    border: 1px solid #dadce0;
+    border-radius: 20px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.filter-item:hover { background: #f1f3f4; }
+.filter-item .material-icons { font-size: 18px; }
+
+.filter-next {
+    background: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    border: 1px solid #dadce0;
+    cursor: pointer;
+}
+
+#map-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Doit être plus bas que le panneau de recherche (z-index: 1000) */
+}
+
+/* Force la carte Folium (qui est une iframe) à remplir tout le div */
+#map-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Section des inputs */
+.inputs-section {
+    display: flex;
+    padding: 10px 15px;
+    align-items: center;
+    background: white;
+}
+
+/* La ligne décorative à gauche */
+.route-line-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 12px;
+}
+
+.icon-dot { font-size: 14px !important; color: #5f6368; }
+.icon-marker { font-size: 18px !important; color: #d93025; }
+
+.dots-line {
+    width: 2px;
+    height: 30px;
+    border-left: 2px dotted #bdc1c6;
+    margin: 2px 0;
+}
+
+/* Les champs de saisie */
+.fields-container { flex: 1; }
+
+.form-control-custom {
+    width: 100%;
+    border: 1px solid transparent;
+    background-color: #f1f3f4;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+.form-control-custom:focus {
+    background-color: white;
+    border-color: #1a73e8;
+}
+
+/* Icône d'inversion (swap) */
+.swap-container {
+    padding-left: 10px;
+    color: #5f6368;
+    cursor: pointer;
+}
+
+.swap-container:hover { color: #1a73e8; }

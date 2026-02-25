@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoRoute - Maps Pro</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="filter-carousel">
+    <div class="filter-item"><span class="material-icons text-danger">restaurant</span><span>Restaurants</span></div>
+    <div class="filter-item"><span class="material-icons text-primary">hotel</span><span>Hôtels</span></div>
+    <div class="filter-item"><span class="material-icons text-warning">local_attraction</span><span>Activités à découvrir</span></div>
+    <div class="filter-item"><span class="material-icons text-secondary">museum</span><span>Musée</span></div>
+    <div class="filter-item"><span class="material-icons text-info">directions_bus</span><span>Transports en commun</span></div>
+    <div class="filter-item"><span class="material-icons text-success">local_pharmacy</span><span>Pharmacies</span></div>
+    <div class="filter-item"><span class="material-icons text-dark">atm</span><span>Distributeurs de billets</span></div>
+    <div class="filter-next"><span class="material-icons">chevron_right</span></div>
+</div>
+
+<div class="search-container">
+    <div class="search-bar shadow-sm" id="mainBar">
+        <span class="material-icons menu-icon">menu</span>
+        <input type="text" id="searchInput" placeholder="Rechercher dans EcoRoute" autocomplete="off">
+        <span class="material-icons search-icon">search</span>
+        <div class="vertical-divider"></div>
+        <span class="material-icons directions-icon" id="directionsTrigger" style="cursor:pointer;">directions</span>
+    </div>
+
+    <div id="full-nav-panel" class="navigation-panel shadow d-none" style="background: white; border-radius: 8px; padding: 15px; margin-top: 10px;">
+        <div class="transport-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div class="mode-btns" style="display: flex; gap: 15px;">
+                <div class="mode-btn active" style="cursor:pointer;"><span class="material-icons">directions_car</span></div>
+                <div class="mode-btn" style="cursor:pointer;"><span class="material-icons">directions_transit</span></div>
+                <div class="mode-btn" style="cursor:pointer;"><span class="material-icons">directions_walk</span></div>
+                <div class="mode-btn" style="cursor:pointer;"><span class="material-icons">directions_bike</span></div>
+            </div>
+            <span class="material-icons close-panel" id="close-btn" style="cursor:pointer">close</span>
+        </div>
+
+        <div class="inputs-section" style="display: flex; gap: 10px; align-items: center;">
+            <div class="fields-container" style="flex-grow: 1;">
+                <input type="text" id="start-node" class="form-control" placeholder="Point de départ" value="Ma position" style="margin-bottom: 8px;">
+                <input type="text" id="end-node" class="form-control" placeholder="Destination">
+            </div>
+            <div class="swap-container" id="swapNodes" style="cursor:pointer">
+                <span class="material-icons">swap_vert</span>
+            </div>
+        </div>
+
+        <div class="results-list" style="margin-top: 15px;">
+            <div class="result-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #eee;">
+                <span class="material-icons">home</span>
+                <div class="text-content">
+                    <div style="font-weight: 500;">Domicile</div>
+                    <div style="font-size: 12px; color: grey;">Ajouter une adresse</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="map-container">
+    {{ map_html | safe }}
+</div>
+
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const mainBar = document.getElementById('mainBar');
+    const directionsTrigger = document.getElementById('directionsTrigger');
+    const fullNavPanel = document.getElementById('full-nav-panel');
+    const closeBtn = document.getElementById('close-btn');
+
+    // Afficher le card au clic sur la barre ou l'icône
+    const openCard = () => {
+        fullNavPanel.classList.remove('d-none');
+        mainBar.style.borderRadius = "8px 8px 0 0";
+    };
+
+    searchInput.addEventListener('focus', openCard);
+    directionsTrigger.addEventListener('click', openCard);
+
+    // Fermer le card au clic sur la croix
+    closeBtn.addEventListener('click', () => {
+        fullNavPanel.classList.add('d-none');
+        mainBar.style.borderRadius = "8px";
+    });
+
+    // Toggle des icônes de transport
+    const modes = document.querySelectorAll('.mode-btn');
+    modes.forEach(mode => {
+        mode.addEventListener('click', () => {
+            modes.forEach(m => m.style.color = "grey");
+            mode.style.color = "#1a73e8";
+        });
+    });
+
+    // Fonction pour envoyer l'adresse à Python et déplacer la carte
+async function searchLocation(address) {
+    try {
+        const response = await fetch('/geocode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address: address })
+        });
+
+        const data = await response.json();
+
+        if (data.lat && data.lng) {
+            // "map" est l'objet créé par Folium dans ton HTML
+            // On centre la carte sur les nouvelles coordonnées
+            window.map_id_ici.setView([data.lat, data.lng], 13); 
+            
+            // On ajoute un marqueur
+            L.marker([data.lat, data.lng]).addTo(window.map_id_ici)
+                .bindPopup(data.display_name).openPopup();
+        } else {
+            alert("Lieu introuvable : " + (data.error || "Erreur inconnue"));
+        }
+    } catch (error) {
+        console.error("Erreur lors de la recherche:", error);
+    }
+}
+
+// Déclencheur sur la touche ENTRÉE de la barre de recherche
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        searchLocation(this.value);
+    }
+});
+</script>
+
+</body>
+</html>
