@@ -1,5 +1,7 @@
 from flask import Flask, render_template
 import folium
+import get_city_graph from logic
+import calculate_route from logic
 
 app = Flask(__name__)
 
@@ -21,3 +23,30 @@ def index():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+@app.route('/calculate', methods=['POST'])
+def handle_request():
+    
+    data = request.get_json()
+    
+   
+    start_coords = data.get('start') # [lat, lon]
+    end_coords = data.get('end')     # [lat, lon]
+    conso = data.get('consumption', 6.0) 
+    prix = data.get('fuel_price', 1.80)
+
+    
+    result = calculate_route(G, start_coords, end_coords)
+    '''
+    # 4. Si le calcul a réussi, on ajoute la partie "Argent/Eco"
+    if result['status'] == 'success':
+        dist_km = result['distance']
+        # Calcule le coût ici avec ta formule !
+        cout_final = (dist_km / 100) * conso * prix
+        
+        # On ajoute cette info au dictionnaire de résultat
+        result['fuel_cost'] = round(cout_final, 2)
+    '''
+    # 5. On renvoie tout au Frontend
+    return jsonify(result)
