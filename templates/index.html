@@ -67,8 +67,13 @@
 </div>
 
 <div id="map-container">
-    {{ map_html | safe }}
+{{ map_html | safe }}
 </div>
+
+<script>
+const map = {{ map_name }};
+</script>
+
 
 <script>
     const searchInput = document.getElementById('searchInput');
@@ -77,7 +82,49 @@
     const fullNavPanel = document.getElementById('full-nav-panel');
     const closeBtn = document.getElementById('close-btn');
 
-    // Afficher le card au clic sur la barre ou l'icône
+    // 1. Fonction de recherche (ton pont avec Python)
+    async function searchLocation(address) {
+        if (!address || address === "Ma position") return;
+
+        let searchAddress = address;
+        if (!address.toLowerCase().includes("belfort")) {
+            searchAddress = address + ", Belfort";
+        }
+
+        try {
+            const response = await fetch('/geocode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address: searchAddress })
+            });
+
+            const data = await response.json();
+
+            if (data.lat && data.lng) {
+                // Utilise 'map' (nom forcé dans app.py)
+                map.setView([data.lat, data.lng], 15); 
+                L.marker([data.lat, data.lng]).addTo(map)
+                    .bindPopup(data.display_name).openPopup();
+            } else {
+                alert("Lieu introuvable à Belfort : " + address);
+            }
+        } catch (error) {
+            console.error("Erreur communication serveur:", error);
+        }
+    }
+
+    // 2. Écouteurs pour la touche ENTRÉE sur les 3 champs
+    const inputs = ['searchInput', 'start-node', 'end-node'];
+    inputs.forEach(id => {
+        document.getElementById(id).addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchLocation(this.value);
+            }
+        });
+    });
+
+    // 3. Gestion de l'interface (Ouverture/Fermeture du panneau)
     const openCard = () => {
         fullNavPanel.classList.remove('d-none');
         mainBar.style.borderRadius = "8px 8px 0 0";
@@ -86,13 +133,12 @@
     searchInput.addEventListener('focus', openCard);
     directionsTrigger.addEventListener('click', openCard);
 
-    // Fermer le card au clic sur la croix
     closeBtn.addEventListener('click', () => {
         fullNavPanel.classList.add('d-none');
         mainBar.style.borderRadius = "8px";
     });
 
-    // Toggle des icônes de transport
+    // 4. Style des boutons de transport
     const modes = document.querySelectorAll('.mode-btn');
     modes.forEach(mode => {
         mode.addEventListener('click', () => {
@@ -100,41 +146,6 @@
             mode.style.color = "#1a73e8";
         });
     });
-
-    // Fonction pour envoyer l'adresse à Python et déplacer la carte
-async function searchLocation(address) {
-    try {
-        const response = await fetch('/geocode', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ address: address })
-        });
-
-        const data = await response.json();
-
-        if (data.lat && data.lng) {
-            // "map" est l'objet créé par Folium dans ton HTML
-            // On centre la carte sur les nouvelles coordonnées
-            window.map_id_ici.setView([data.lat, data.lng], 13); 
-            
-            // On ajoute un marqueur
-            L.marker([data.lat, data.lng]).addTo(window.map_id_ici)
-                .bindPopup(data.display_name).openPopup();
-        } else {
-            alert("Lieu introuvable : " + (data.error || "Erreur inconnue"));
-        }
-    } catch (error) {
-        console.error("Erreur lors de la recherche:", error);
-    }
-}
-
-// Déclencheur sur la touche ENTRÉE de la barre de recherche
-document.getElementById('searchInput').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        searchLocation(this.value);
-    }
-});
 </script>
 
 </body>
