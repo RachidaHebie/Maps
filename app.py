@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 import folium
-import get_city_graph from logic
-import calculate_route from logic
+from logic import get_city_graph
+from logic import calculate_route 
 from geopy.geocoders import Nominatim
+
 
 app = Flask(__name__)
 
@@ -50,8 +51,6 @@ def geocode():
     
     return jsonify({"error": "Lieu introuvable à Belfort"}), 404
 
-if __name__ == '__main__':
-    app.run(debug=True)
 
 
 @app.route('/calculate', methods=['POST'])
@@ -79,3 +78,6 @@ def handle_request():
     '''
     # 5. On renvoie tout au Frontend
     return jsonify(result)
+
+if __name__ == '__main__':
+    app.run(debug=True)
