@@ -101,5 +101,96 @@ visualize_on_map(res)
 # --- Problème du Voyageur de Commerce --- #
 # ---------------------------------------- #
 
-def voyageur(G, nodes):
+import networkx as nx
+
+def travelling_salesman(G, coords_list):
+    # 1. Préparation du graphe et des nœuds
+    G_undirected = G.to_undirected()
+    nodes_to_visit = [ox.distance.nearest_nodes(G, lon, lat) for lat, lon in coords_list]
+
+    # 2. Calcul de l'ordre optimal (TSP)
+    nodes_order = traveling_salesman_problem(G_undirected, nodes=nodes_to_visit, weight='length')
+
+    tsp_coords = []
+    total_dist_m = 0
+
+    # 3. Calcul des stats et préparation des coordonnées
+    for i in range(len(nodes_order) - 1):
+        u, v = nodes_order[i], nodes_order[i+1]
+        
+        # On calcule la distance RÉELLE sur route entre deux étapes (même si on l'affiche en ligne droite)
+        total_dist_m += nx.shortest_path_length(G, u, v, weight='length')
+        
+        # Ajout des coordonnées pour l'affichage
+        tsp_coords.append([G.nodes[u]['y'], G.nodes[u]['x']])
+
+    # On ajoute le dernier point de la liste
+    last_node = nodes_order[-1]
+    tsp_coords.append([G.nodes[last_node]['y'], G.nodes[last_node]['x']])
+
+    # 4. Conversion des stats
+    dist_km = round(total_dist_m / 1000, 2)
+    # Estimation du temps : moyenne de 20 km/h en ville (incluant feux et trafic)
+    duration_min = round((dist_km / 20) * 60)
+
+    return {
+        "status": "success",
+        "coords": tsp_coords,
+        "distance_km": dist_km,
+        "duration_min": duration_min,
+        "order": nodes_order
+    }
     
+
+def test_marchand_belfort():
+    print("🚀 Démarrage du test : Algorithme du Marchand (TSP)")
+    
+    # 1. On récupère le graphe de Belfort
+    G = get_city_graph("Belfort, France")
+
+    # 2. Points de test mélangés (Gare -> IUT -> Lion -> Marché)
+    # Dans cet ordre, c'est pas optimisé du tout !
+    test_waypoints = [
+        [47.63197082746643, 6.858827884305796], # A - Gare de Belfort
+        [47.64454142848342, 6.857978086228185], # B - IUT (Technopôle) -> Loin au Nord-Ouest
+        [47.64587288281944, 6.855428692980198], # C - Le Lion (Est) -> On revient en arrière
+        [47.64888184453169, 6.849954414230187], # D - Marché des Vosges (Nord)
+    ]
+
+    # 3. Calcul de la tournée optimisée
+    print("🧠 Calcul de l'ordre le plus court...")
+    result = voyageur(G, test_waypoints)
+
+    if result['status'] == 'success':
+        # 4. Création de la carte de test
+        m = folium.Map(location=[47.64, 6.85], zoom_start=14)
+
+        # 5. Dessin du trajet optimisé
+        folium.PolyLine(
+            locations=result['coords'],
+            color="#28a745", # Vert pour le côté "Eco"
+            weight=6,
+            opacity=0.8,
+            
+        ).add_to(m)
+
+        # 6. Affichage des étapes avec des numéros
+        for i, coord in enumerate(test_waypoints):
+            # On crée une icône avec le numéro de l'étape
+            folium.Marker(
+                location=coord,
+                popup=f"Étape : {i+1}",
+                icon=folium.Icon(color='blue', icon='info-sign')
+            ).add_to(m)
+
+        # 7. Sauvegarde et verdict
+        filename = "test_marchand_belfort.html"
+        m.save(filename)
+        print(f"✅ Test terminé !")
+        
+        print(f"📂 Résultat généré dans : {filename}")
+    else:
+        print(f"❌ Erreur : {result.get('message')}")
+
+if __name__ == "__main__":
+    test_marchand_belfort()
