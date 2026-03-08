@@ -61,8 +61,6 @@ def geocode():
     return jsonify({"error": "Lieu introuvable à Belfort"}), 404
 
 
-
-
 @app.route('/calculate', methods=['POST'])
 def handle_request():
     
@@ -94,12 +92,7 @@ def handle_request():
     # 5. On renvoie tout au Frontend
     return jsonify(result)
 
-<<<<<<< HEAD
-if __name__ == '__main__':
-    app.run(debug=True)
-=======
 
 if __name__ == '__main__':
     app.run(debug=True)
 
->>>>>>> 9bb33ae20227ab742bff3bfcacf464bd0e2752ba
