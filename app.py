@@ -60,10 +60,7 @@ def geocode():
     
     return jsonify({"error": "Lieu introuvable à Belfort"}), 404
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 9bb33ae20227ab742bff3bfcacf464bd0e2752ba
 
 
 @app.route('/calculate', methods=['POST'])
