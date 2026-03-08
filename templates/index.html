@@ -1,152 +1,275 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EcoRoute - Maps Pro</title>
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<div class="filter-carousel">
-    <div class="filter-item"><span class="material-icons text-danger">restaurant</span><span>Restaurants</span></div>
-    <div class="filter-item"><span class="material-icons text-primary">hotel</span><span>Hôtels</span></div>
-    <div class="filter-item"><span class="material-icons text-warning">local_attraction</span><span>Activités à découvrir</span></div>
-    <div class="filter-item"><span class="material-icons text-secondary">museum</span><span>Musée</span></div>
-    <div class="filter-item"><span class="material-icons text-info">directions_bus</span><span>Transports en commun</span></div>
-    <div class="filter-item"><span class="material-icons text-success">local_pharmacy</span><span>Pharmacies</span></div>
-    <div class="filter-item"><span class="material-icons text-dark">atm</span><span>Distributeurs de billets</span></div>
-    <div class="filter-next"><span class="material-icons">chevron_right</span></div>
-</div>
-
-<div class="search-container">
-    <div class="search-bar shadow-sm" id="mainBar">
-        <span class="material-icons menu-icon">menu</span>
-        <input type="text" id="searchInput" placeholder="Rechercher dans EcoRoute" autocomplete="off">
-        <span class="material-icons search-icon">search</span>
-        <div class="vertical-divider"></div>
-        <span class="material-icons directions-icon" id="directionsTrigger" style="cursor:pointer;">directions</span>
+    <div class="filter-carousel">
+        <div class="filter-item"><span class="material-icons text-danger">restaurant</span><span>Restaurants</span>
+        </div>
+        <div class="filter-item"><span class="material-icons text-primary">hotel</span><span>Hôtels</span></div>
+        <div class="filter-item"><span class="material-icons text-warning">local_attraction</span><span>Activités à
+                découvrir</span></div>
+        <div class="filter-item"><span class="material-icons text-secondary">museum</span><span>Musée</span></div>
+        <div class="filter-item"><span class="material-icons text-info">directions_bus</span><span>Transports en
+                commun</span></div>
+        <div class="filter-item"><span class="material-icons text-success">local_pharmacy</span><span>Pharmacies</span>
+        </div>
+        <div class="filter-item"><span class="material-icons text-dark">atm</span><span>Distributeurs de billets</span>
+        </div>
+        <div class="filter-next"><span class="material-icons">chevron_right</span></div>
     </div>
 
-    <div id="full-nav-panel" class="navigation-panel shadow d-none" style="background: white; border-radius: 8px; padding: 15px; margin-top: 10px;">
-        <div class="transport-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <div class="mode-btns" style="display: flex; gap: 15px;">
-                <div class="mode-btn active" style="cursor:pointer;"><span class="material-icons">directions_car</span></div>
-                <div class="mode-btn" style="cursor:pointer;"><span class="material-icons">directions_transit</span></div>
-                <div class="mode-btn" style="cursor:pointer;"><span class="material-icons">directions_walk</span></div>
-                <div class="mode-btn" style="cursor:pointer;"><span class="material-icons">directions_bike</span></div>
-            </div>
-            <span class="material-icons close-panel" id="close-btn" style="cursor:pointer">close</span>
+    <div class="search-container">
+        <div class="search-bar shadow-sm" id="mainBar">
+            <span class="material-icons menu-icon">menu</span>
+            <input type="text" id="searchInput" placeholder="Rechercher dans EcoRoute" autocomplete="off">
+            <span class="material-icons search-icon">search</span>
+            <div class="vertical-divider"></div>
+            <span class="material-icons directions-icon" id="directionsTrigger"
+                style="cursor:pointer;">directions</span>
         </div>
 
-        <div class="inputs-section" style="display: flex; gap: 10px; align-items: center;">
-            <div class="fields-container" style="flex-grow: 1;">
-                <input type="text" id="start-node" class="form-control" placeholder="Point de départ" value="Ma position" style="margin-bottom: 8px;">
-                <input type="text" id="end-node" class="form-control" placeholder="Destination">
+        <div id="full-nav-panel" class="navigation-panel shadow d-none"
+            style="background: white; border-radius: 8px; padding: 15px; margin-top: 10px;">
+            <div class="transport-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="mode-btns" style="display: flex; gap: 15px;">
+                    <div class="mode-btn active" style="cursor:pointer;"><span
+                            class="material-icons">directions_car</span></div>
+                    <div class="mode-btn" style="cursor:pointer;"><span class="material-icons">directions_transit</span>
+                    </div>
+                    <div class="mode-btn" style="cursor:pointer;"><span class="material-icons">directions_walk</span>
+                    </div>
+                    <div class="mode-btn" style="cursor:pointer;"><span class="material-icons">directions_bike</span>
+                    </div>
+                </div>
+                <span class="material-icons close-panel" id="close-btn" style="cursor:pointer">close</span>
             </div>
-            <div class="swap-container" id="swapNodes" style="cursor:pointer">
-                <span class="material-icons">swap_vert</span>
-            </div>
-        </div>
 
-        <div class="results-list" style="margin-top: 15px;">
-            <div class="result-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #eee;">
-                <span class="material-icons">home</span>
-                <div class="text-content">
-                    <div style="font-weight: 500;">Domicile</div>
-                    <div style="font-size: 12px; color: grey;">Ajouter une adresse</div>
+            <div class="inputs-section" style="display: flex; gap: 10px; align-items: center;">
+
+                <div class="fields-container" style="flex-grow: 1;">
+                    <input type="text" id="start-node" class="form-control" placeholder="Point de départ"
+                        value="Ma position" style="margin-bottom: 8px;">
+                    <input type="text" id="end-node" class="form-control" placeholder="Destination">
+                </div>
+                <button id="btn-calculer" type="submit" class="btn btn-primary mt-2">calculer</button>
+
+
+                
+            </div>
+
+            <div id="route-summary" class="mt-3 p-3 shadow-sm d-none"
+                style="background-color: #f8f9fa; border-radius: 10px; border-left: 5px solid #1a73e8;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="m-0" style="color: #1a73e8; font-weight: 600;">Détails de l'itinéraire</h6>
+                    <span class="material-icons" style="font-size: 18px; color: #1a73e8;">eco</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-2">
+                    <span class="material-icons me-2" style="font-size: 20px; color: #5f6368;">straighten</span>
+                    <span>Distance : <strong id="res-distance">0</strong> km</span>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <span class="material-icons me-2" style="font-size: 20px; color: #5f6368;">schedule</span>
+                    <span>Durée : <strong id="res-duration">0</strong> min</span>
+                </div>
+            </div>
+
+            <div class="results-list" style="margin-top: 15px;">
+                <div class="result-item"
+                    style="display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #eee;">
+                    <span class="material-icons">home</span>
+                    <div class="text-content">
+                        <div style="font-weight: 500;">Domicile</div>
+                        <div style="font-size: 12px; color: grey;">Ajouter une adresse</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div id="map-container">
-{{ map_html | safe }}
-</div>
+    <div id="map-container">
+        {{ map_html | safe }}
+    </div>
 
-<script>
-const map = {{ map_name }};
-</script>
+    <script>
+        const map = {{ map_name }}; // Bien mettre les doubles accolades
+        let currentPolyline = null; // Pour pouvoir effacer l'ancien trajet quand on en calcule un nouveau
+    </script>
 
 
-<script>
-    const searchInput = document.getElementById('searchInput');
-    const mainBar = document.getElementById('mainBar');
-    const directionsTrigger = document.getElementById('directionsTrigger');
-    const fullNavPanel = document.getElementById('full-nav-panel');
-    const closeBtn = document.getElementById('close-btn');
+    <script>
 
-    // 1. Fonction de recherche (ton pont avec Python)
-    async function searchLocation(address) {
-        if (!address || address === "Ma position") return;
+        const searchInput = document.getElementById('searchInput');
+        const mainBar = document.getElementById('mainBar');
+        const directionsTrigger = document.getElementById('directionsTrigger');
+        const fullNavPanel = document.getElementById('full-nav-panel');
+        const closeBtn = document.getElementById('close-btn');
 
-        let searchAddress = address;
-        if (!address.toLowerCase().includes("belfort")) {
-            searchAddress = address + ", Belfort";
+        // 1. Fonction de recherche (ton pont avec Python)
+        async function searchLocation(address) {
+            if (!address || address === "Ma position") return;
+
+            let searchAddress = address;
+            if (!address.toLowerCase().includes("belfort")) {
+                searchAddress = address + ", Belfort";
+            }
+
+            try {
+                const response = await fetch('/geocode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: searchAddress })
+                });
+
+                const data = await response.json();
+
+                if (data.lat && data.lng) {
+                    // Utilise 'map' (nom forcé dans app.py)
+                    map.setView([data.lat, data.lng], 15);
+                    L.marker([data.lat, data.lng]).addTo(map)
+                        .bindPopup(data.display_name).openPopup();
+                } else {
+                    alert("Lieu introuvable à Belfort : " + address);
+                }
+            } catch (error) {
+                console.error("Erreur communication serveur:", error);
+            }
         }
 
-        try {
-            const response = await fetch('/geocode', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ address: searchAddress })
+        // 2. Écouteurs pour la touche ENTRÉE sur les 3 champs
+        const inputs = ['searchInput'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchLocation(this.value);
+                }
             });
+        });
 
-            const data = await response.json();
+        // 3. Gestion de l'interface (Ouverture/Fermeture du panneau)
+        const openCard = () => {
+            fullNavPanel.classList.remove('d-none');
+            mainBar.style.borderRadius = "8px 8px 0 0";
+        };
 
-            if (data.lat && data.lng) {
-                // Utilise 'map' (nom forcé dans app.py)
-                map.setView([data.lat, data.lng], 15); 
-                L.marker([data.lat, data.lng]).addTo(map)
-                    .bindPopup(data.display_name).openPopup();
-            } else {
-                alert("Lieu introuvable à Belfort : " + address);
+        searchInput.addEventListener('focus', openCard);
+        directionsTrigger.addEventListener('click', openCard);
+
+        closeBtn.addEventListener('click', () => {
+            fullNavPanel.classList.add('d-none');
+            mainBar.style.borderRadius = "8px";
+        });
+
+        // 4. Style des boutons de transport
+        const modes = document.querySelectorAll('.mode-btn');
+        modes.forEach(mode => {
+            mode.addEventListener('click', () => {
+                modes.forEach(m => m.style.color = "grey");
+                mode.style.color = "#1a73e8";
+            });
+        });
+
+        async function calculateRoute() {
+            const startAddr = document.getElementById('start-node').value;
+            const endAddr = document.getElementById('end-node').value;
+
+            if (!startAddr || !endAddr) {
+                alert("Veuillez remplir le départ et l'arrivée");
+                return;
             }
-        } catch (error) {
-            console.error("Erreur communication serveur:", error);
+
+            try {
+                // Étape A : On géocode le départ et l'arrivée en parallèle
+                const [resStart, resEnd] = await Promise.all([
+                    fetch('/geocode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ address: startAddr + ", Belfort" }) }),
+                    fetch('/geocode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ address: endAddr + ", Belfort" }) })
+                ]);
+
+                const dataStart = await resStart.json();
+                const dataEnd = await resEnd.json();
+
+                if (dataStart.error || dataEnd.error) {
+                    alert("Une des adresses est introuvable");
+                    return;
+                }
+
+                // Étape B : On appelle ton moteur de calcul (Personne A !)
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        start: [dataStart.lat, dataStart.lng],
+                        end: [dataEnd.lat, dataEnd.lng],
+                        consumption: 6.5, // Tu pourras lier ça à un input plus tard
+                        fuel_price: 1.85
+                    })
+                });
+
+                const routeData = await response.json();
+
+                if (routeData.status === "success") {
+                    // Étape C : DESSINER SUR LA CARTE
+
+                    // 1. On efface l'ancien trajet s'il existe
+                    if (currentPolyline) { map.removeLayer(currentPolyline); }
+
+                    // 2. On trace le nouveau (Leaflet utilise L.polyline)
+                    currentPolyline = L.polyline(routeData.coords, {
+                        color: '#1a73e8',
+                        weight: 6,
+                        opacity: 0.8
+                    }).addTo(map);
+
+                    // 3. On ajuste la vue pour voir tout le trajet
+                    map.fitBounds(currentPolyline.getBounds());
+
+
+
+                    if (routeData.status === "success") {
+
+                        
+
+                        // 2. On affiche le panneau de résumé
+                        const summaryPanel = document.getElementById('route-summary');
+                        summaryPanel.classList.remove('d-none');
+
+                        // 3. On injecte les valeurs reçues du Python
+                        document.getElementById('res-distance').innerText = routeData.distance_km;
+
+                        // Petite sécurité : si la durée est de 0, on affiche "< 1"
+                        const duration = routeData.duration_min;
+                        document.getElementById('res-duration').innerText = duration > 0 ? duration : "< 1";
+
+                        // 4. Bonus : Ajuster la vue pour que l'utilisateur voie tout
+                        map.fitBounds(currentPolyline.getBounds(), { padding: [50, 50] });
+                    }
+                }
+
+            } catch (error) {
+                console.error("Erreur globale:", error);
+            }
         }
-    }
 
-    // 2. Écouteurs pour la touche ENTRÉE sur les 3 champs
-    const inputs = ['searchInput', 'start-node', 'end-node'];
-    inputs.forEach(id => {
-        document.getElementById(id).addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                searchLocation(this.value);
-            }
-        });
-    });
-
-    // 3. Gestion de l'interface (Ouverture/Fermeture du panneau)
-    const openCard = () => {
-        fullNavPanel.classList.remove('d-none');
-        mainBar.style.borderRadius = "8px 8px 0 0";
-    };
-
-    searchInput.addEventListener('focus', openCard);
-    directionsTrigger.addEventListener('click', openCard);
-
-    closeBtn.addEventListener('click', () => {
-        fullNavPanel.classList.add('d-none');
-        mainBar.style.borderRadius = "8px";
-    });
-
-    // 4. Style des boutons de transport
-    const modes = document.querySelectorAll('.mode-btn');
-    modes.forEach(mode => {
-        mode.addEventListener('click', () => {
-            modes.forEach(m => m.style.color = "grey");
-            mode.style.color = "#1a73e8";
-        });
-    });
-</script>
+        // 6. On lie la fonction au clic du bouton
+        document.getElementById('btn-calculer').addEventListener('click', calculateRoute);
+    </script>
 
 </body>
+
 </html>
