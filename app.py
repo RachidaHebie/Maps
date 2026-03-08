@@ -1,14 +1,23 @@
 from flask import Flask, render_template, request, jsonify
 import folium
+<<<<<<< HEAD
 from logic import get_city_graph
+=======
+from logic import get_city_graph 
+>>>>>>> 9bb33ae20227ab742bff3bfcacf464bd0e2752ba
 from logic import calculate_route 
 from geopy.geocoders import Nominatim
 
 
 app = Flask(__name__)
 
+print("Chargement du réseau routier...")
+G = get_city_graph("Belfort, France")
+
 # Initialisation du géocodeur en dehors des fonctions
 geolocator = Nominatim(user_agent="ecoroute_belfort")
+
+
 
 @app.route('/')
 def index():
@@ -28,7 +37,7 @@ def index():
         map_name=map_name
     )
 
-# --- NOUVELLE ROUTE POUR L'ÉTAPE 3 ---
+
 @app.route('/geocode', methods=['POST'])
 def geocode():
     # On récupère l'adresse envoyée par le JavaScript
@@ -39,7 +48,7 @@ def geocode():
     location = geolocator.geocode(
         f"{adresse_saisie}, Belfort, France", 
         viewbox=[(47.66, 6.82), (47.61, 6.88)], 
-        bounded=1
+        bounded=1.1
     )
     
     if location:
@@ -51,6 +60,10 @@ def geocode():
     
     return jsonify({"error": "Lieu introuvable à Belfort"}), 404
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9bb33ae20227ab742bff3bfcacf464bd0e2752ba
 
 
 @app.route('/calculate', methods=['POST'])
@@ -59,13 +72,18 @@ def handle_request():
     data = request.get_json()
     
    
-    start_coords = data.get('start') # [lat, lon]
-    end_coords = data.get('end')     # [lat, lon]
-    conso = data.get('consumption', 6.0) 
-    prix = data.get('fuel_price', 1.80)
+    # 1. On récupère les listes [lat, lon]
+    start_list = data.get('start') # Résultat: [47.63, 6.85]
+    end_list = data.get('end')     # Résultat: [47.64, 6.86]
 
-    
-    result = calculate_route(G, start_coords, end_coords)
+    # 2. On extrait chaque coordonnée par son index
+    lat1 = start_list[0]
+    lon1 = start_list[1]
+    lat2 = end_list[0]
+    lon2 = end_list[1]
+
+    # 3. On appelle ta fonction avec les 5 arguments attendus
+    result = calculate_route(G, lat1, lon1, lat2, lon2)
     '''
     # 4. Si le calcul a réussi, on ajoute la partie "Argent/Eco"
     if result['status'] == 'success':
@@ -79,5 +97,12 @@ def handle_request():
     # 5. On renvoie tout au Frontend
     return jsonify(result)
 
+<<<<<<< HEAD
 if __name__ == '__main__':
     app.run(debug=True)
+=======
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+>>>>>>> 9bb33ae20227ab742bff3bfcacf464bd0e2752ba
