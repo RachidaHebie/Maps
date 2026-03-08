@@ -1,20 +1,32 @@
 import networkx as nx
 from networkx.algorithms.approximation import traveling_salesman_problem
-
-
 import osmnx as ox
 import folium
 import numpy as np  
 import os
 
 
-# ---------------------------------------- #
-# --------- Le plus court chemin --------- #
-# ---------------------------------------- #
 
-# Récupère le graphe de Belfort et les données correspondantes 
+
+
 def get_city_graph(place="Belfort, France", network_type="drive", cache_dir="Data"):
-    
+    """
+    Charge ou télécharge le graphe routier d'une ville via OSMnx.
+
+    Si le graphe a déjà été téléchargé, il est chargé depuis le cache local
+    (dossier `cache_dir`) pour éviter un appel réseau inutile.
+    Les vitesses et temps de trajet sont ajoutés automatiquement aux arêtes.
+
+    Args:
+        place (str): Nom de la ville à récupérer (format "Ville, Pays").
+        network_type (str): Type de réseau OSM ("drive", "walk", "bike"...).
+        cache_dir (str): Répertoire local où stocker/charger le fichier .graphml.
+
+    Returns:
+        G (networkx.MultiDiGraph): Graphe routier de la ville avec attributs de
+                                   vitesse et de temps de trajet sur chaque arête.
+    """
+
     os.makedirs(cache_dir, exist_ok=True)
 
     filename = f"{place.replace(', ', '_')}.graphml"
@@ -36,15 +48,39 @@ def get_city_graph(place="Belfort, France", network_type="drive", cache_dir="Dat
     return G
 
 
-# Calcule le plus court chemin et renvoie aussi la distance et le temps necessaire
+# ---------------------------------------- #
+# --------- Le plus court chemin --------- #
+# ---------------------------------------- #
+
+
 def calculate_route(G, lat1, lon1, lat2, lon2):
+    """
+    Calcule le plus court itinéraire entre deux points GPS sur le graphe routier.
+
+    Trouve les nœuds du graphe les plus proches des coordonnées données, puis
+    calcule le chemin le plus court (par distance). Les coordonnées détaillées
+    du trajet (en suivant la géométrie des routes) sont extraites pour l'affichage.
+
+    Args:
+        G (networkx.MultiDiGraph): Graphe routier de la ville.
+        lat1 (float): Latitude du point de départ.
+        lon1 (float): Longitude du point de départ.
+        lat2 (float): Latitude du point d'arrivée.
+        lon2 (float): Longitude du point d'arrivée.
+
+    Returns:
+        dict: Dictionnaire contenant :
+            - "status" (str)       : "success" si le calcul a réussi.
+            - "coords" (list)      : Liste de [lat, lon] représentant le tracé du chemin.
+            - "distance_km" (float): Distance totale de l'itinéraire en kilomètres.
+            - "duration_min" (int) : Durée estimée du trajet en minutes.
+    """
 
     orig = ox.distance.nearest_nodes(G, lon1, lat1, False)
     dest = ox.distance.nearest_nodes(G, lon2, lat2, False)
 
     route = ox.routing.shortest_path(G, orig, dest, weight='length', cpus=1)
     
-
     gdf_edges = ox.utils_graph.route_to_gdf(G, route)
     
     route_coords = []
@@ -70,8 +106,69 @@ def calculate_route(G, lat1, lon1, lat2, lon2):
     }
  
 
-# Test de la visualisation du trajet
+# ---------------------------------------- #
+# --- Problème du Voyageur de Commerce --- #
+# ---------------------------------------- #
+
+
+
+def travelling_salesman(G, coords_list):
+    """
+    Résout le Problème du Voyageur de Commerce (TSP) sur un graphe routier réel.
+
+    À partir d'une liste de points GPS à visiter, détermine l'ordre de passage
+    optimal (distance totale minimisée) en utilisant une heuristique d'approximation.
+    Le tracé retourné relie les étapes en ligne droite nœud-à-nœud, mais la
+    distance calculée correspond bien aux distances réelles sur le réseau routier.
+
+    Args:
+        G (networkx.MultiDiGraph): Graphe routier de la ville.
+        coords_list (list): Liste de coordonnées [lat, lon] des points à visiter.
+
+    Returns:
+        dict: Dictionnaire contenant :
+            - "status" (str)        : "success" si le calcul a réussi.
+            - "coords" (list)       : Liste de [lat, lon] dans l'ordre optimal de visite.
+            - "distance_km" (float) : Distance totale de la tournée en kilomètres.
+            - "duration_min" (int)  : Durée estimée en minutes (vitesse moyenne 20 km/h).
+            - "order" (list)        : Liste des IDs de nœuds dans l'ordre optimal.
+    """
+    
+    G_undirected = G.to_undirected()
+    nodes_to_visit = [ox.distance.nearest_nodes(G, lon, lat) for lat, lon in coords_list]
+
+    nodes_order = traveling_salesman_problem(G_undirected, nodes=nodes_to_visit, weight='length')
+
+    tsp_coords = []
+    total_dist_m = 0
+
+    for i in range(len(nodes_order) - 1):
+        u, v = nodes_order[i], nodes_order[i+1]
+        total_dist_m += nx.shortest_path_length(G, u, v, weight='length')
+        tsp_coords.append([G.nodes[u]['y'], G.nodes[u]['x']])
+
+    last_node = nodes_order[-1]
+    tsp_coords.append([G.nodes[last_node]['y'], G.nodes[last_node]['x']])
+
+    dist_km = round(total_dist_m / 1000, 2)
+    duration_min = round((dist_km / 20) * 60)
+
+    return {
+        "status": "success",
+        "coords": tsp_coords,
+        "distance_km": dist_km,
+        "duration_min": duration_min,
+        "order": nodes_order
+    }
+
+
+# ---------------------------------------- #
+# ---- Tests des fonctions hors appli ---- #
+# ---------------------------------------- #
+    
+
 def visualize_on_map(resultat_calcul):
+    
     
     depart = resultat_calcul['coords'][0]
     m = folium.Map(location=depart, zoom_start=14)
@@ -96,51 +193,6 @@ G = get_city_graph()
 res = calculate_route(G, 47.638742628679125, 6.861235261467314, 47.63924143562703, 6.863434672713001)
 visualize_on_map(res)
 
-
-# ---------------------------------------- #
-# --- Problème du Voyageur de Commerce --- #
-# ---------------------------------------- #
-
-import networkx as nx
-
-def travelling_salesman(G, coords_list):
-    # 1. Préparation du graphe et des nœuds
-    G_undirected = G.to_undirected()
-    nodes_to_visit = [ox.distance.nearest_nodes(G, lon, lat) for lat, lon in coords_list]
-
-    # 2. Calcul de l'ordre optimal (TSP)
-    nodes_order = traveling_salesman_problem(G_undirected, nodes=nodes_to_visit, weight='length')
-
-    tsp_coords = []
-    total_dist_m = 0
-
-    # 3. Calcul des stats et préparation des coordonnées
-    for i in range(len(nodes_order) - 1):
-        u, v = nodes_order[i], nodes_order[i+1]
-        
-        # On calcule la distance RÉELLE sur route entre deux étapes (même si on l'affiche en ligne droite)
-        total_dist_m += nx.shortest_path_length(G, u, v, weight='length')
-        
-        # Ajout des coordonnées pour l'affichage
-        tsp_coords.append([G.nodes[u]['y'], G.nodes[u]['x']])
-
-    # On ajoute le dernier point de la liste
-    last_node = nodes_order[-1]
-    tsp_coords.append([G.nodes[last_node]['y'], G.nodes[last_node]['x']])
-
-    # 4. Conversion des stats
-    dist_km = round(total_dist_m / 1000, 2)
-    # Estimation du temps : moyenne de 20 km/h en ville (incluant feux et trafic)
-    duration_min = round((dist_km / 20) * 60)
-
-    return {
-        "status": "success",
-        "coords": tsp_coords,
-        "distance_km": dist_km,
-        "duration_min": duration_min,
-        "order": nodes_order
-    }
-    
 
 def test_marchand_belfort():
     print("🚀 Démarrage du test : Algorithme du Marchand (TSP)")
