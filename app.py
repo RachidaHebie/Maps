@@ -1,8 +1,13 @@
 from flask import Flask, render_template, request, jsonify
 import folium
+<<<<<<< HEAD
+from logic import get_city_graph
+=======
 from logic import get_city_graph 
+>>>>>>> 9bb33ae20227ab742bff3bfcacf464bd0e2752ba
 from logic import calculate_route 
 from geopy.geocoders import Nominatim
+
 
 app = Flask(__name__)
 
@@ -63,7 +68,7 @@ def geocode():
     location = geolocator.geocode(
         f"{adresse_saisie}, Belfort, France", 
         viewbox=[(47.66, 6.82), (47.61, 6.88)], 
-        bounded=1
+        bounded=1.1
     )
     
     if location:
@@ -74,8 +79,6 @@ def geocode():
         })
     
     return jsonify({"error": "Lieu introuvable à Belfort"}), 404
-
-
 
 
 @app.route('/calculate', methods=['POST'])
