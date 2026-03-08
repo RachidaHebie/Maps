@@ -7,8 +7,6 @@ import os
 
 
 
-
-
 def get_city_graph(place="Belfort, France", network_type="drive", cache_dir="Data"):
     """
     Charge ou télécharge le graphe routier d'une ville via OSMnx.

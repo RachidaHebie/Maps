@@ -1,10 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import folium
-<<<<<<< HEAD
 from logic import get_city_graph
-=======
-from logic import get_city_graph 
->>>>>>> 9bb33ae20227ab742bff3bfcacf464bd0e2752ba
 from logic import calculate_route 
 from geopy.geocoders import Nominatim
 
