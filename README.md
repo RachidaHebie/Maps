@@ -15,7 +15,7 @@ Nous avons modélisé un réseau de transport sous forme de graphe (sommets et a
 
 ## Aperçu
 
-![Rendu]('static/rendu.png')
+![Rendu](static/rendu.png)
 
 ## Notre Approche Algorithmique
 
